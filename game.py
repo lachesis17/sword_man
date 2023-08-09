@@ -61,6 +61,26 @@ def main():
     JUMP_HEIGHT = 12
     VELOCTIY = JUMP_HEIGHT
 
+
+    #enemy
+    enemy = pygame.image.load("assets/img/_enemy_left.png")
+    enemy_anim = Sprite(enemy)
+    enemy_frames = []
+    enemy_slide = 7
+    enemy_frame = 0
+    enemy_x = 400
+    enemy_y = 400
+    enemy_init_frame = pygame.time.get_ticks()
+    enemy_hitbox = [enemy_x + 25, enemy_y + 11, 29, 52]
+    enemy_alive = True
+
+    enemy_death = pygame.image.load("assets/img/_enemy_death_left.png")
+    enemy_anim_death = Sprite(enemy_death)
+    enemy_frames_death = []
+    enemy_slide_death = 5
+    enemy_frame_death = 0
+    enemy_init_frame_death = pygame.time.get_ticks()
+
     for x in range(idle_slide):
         idle_frames_right.append(idle_anim_right.get_image(x, 120, 80, 3, BLACK))
         idle_frames_left.append(idle_anim_left.get_image(x, 120, 80, 3, BLACK))
@@ -77,6 +97,10 @@ def main():
     for x in range(jump_slide):
         jump_frames.append(jump_anim.get_image(x, 120, 80, 3, BLACK))
         jump_frames_left.append(jump_anim_left.get_image(x, 120, 80, 3, BLACK))
+    
+    for x in range(enemy_slide):
+        enemy_frames.append(enemy_anim.get_image(x, 150, 150, 3, BLACK))
+        enemy_frames_death.append(enemy_anim_death.get_image(x, 150, 150, 3, BLACK))
 
     '''cooldowns, frame, global vars'''
     cd = 50
@@ -88,11 +112,13 @@ def main():
     facing = "right"    
     x = 30
     y = 490
+    hitbox = [x - 55, y + 11, 29, 52]
 
     #music
     music = pygame.mixer.Sound("assets/sounds/bg.wav")
     pygame.mixer.Sound.set_volume(music, 0.2)
     pygame.mixer.Sound.play(music)
+
 
     #while game running
     while run:
@@ -115,6 +141,9 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 moving = False
+
+        if hitbox[0] >= enemy_hitbox[0]:
+            enemy_alive = False
     
         #key event dict
         key_pressed_is = pygame.key.get_pressed()
@@ -125,6 +154,7 @@ def main():
 
         if key_pressed_is[K_LEFT]:
             x -= 8
+            hitbox[0] -= 8
             moving = True
             facing = "left"
             if not jumping:
@@ -138,6 +168,7 @@ def main():
 
         elif key_pressed_is[K_RIGHT]:
             x += 8
+            hitbox[0] += 8
             moving = True
             facing = "right"
             if not jumping:
@@ -262,6 +293,25 @@ def main():
                     if jump_frame >= jump_slide:
                         jump_frame = 0
                 GAME.blit(jump_frames_left[jump_frame], (x, y))
+
+        #enemy
+        if enemy_alive:
+            curr_frame = pygame.time.get_ticks()
+            if curr_frame - enemy_init_frame >= cd:
+                enemy_frame += 1
+                enemy_init_frame = curr_frame
+                if enemy_frame >= enemy_slide:
+                    enemy_frame = 1
+            GAME.blit(enemy_frames[enemy_frame], (enemy_x, enemy_y))
+        else:
+            curr_frame = pygame.time.get_ticks()
+            if curr_frame - enemy_init_frame_death >= att_cd:
+                enemy_frame_death += 1
+                enemy_init_frame_death = curr_frame
+                if enemy_frame_death >= enemy_slide_death:
+                    enemy_frame_death -= 1
+                    pass
+            GAME.blit(enemy_frames_death[enemy_frame_death], (enemy_x+110, enemy_y))
 
         pygame.display.update()
 
