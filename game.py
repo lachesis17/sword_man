@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 from sprites import Sprite
+import sys
 
 def main():
     pygame.init()
@@ -119,6 +120,11 @@ def main():
     pygame.mixer.Sound.set_volume(music, 0.2)
     pygame.mixer.Sound.play(music)
 
+    def play_attack():
+        swordfx = pygame.mixer.Sound("assets/sounds/sword.wav")
+        pygame.mixer.Sound.set_volume(swordfx, 0.35)
+        pygame.mixer.Sound.play(swordfx)
+
 
     #while game running
     while run:
@@ -128,13 +134,13 @@ def main():
         GAME.blit(bg, (0, 0))
     
         #fps
-        clock.tick(120)
+        clock.tick(90)
     
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-                quit()
+                sys.exit()
 
             if event.type == pygame.KEYUP:
                 moving = False
@@ -152,7 +158,7 @@ def main():
             jumping = True
             moving = True
 
-        if key_pressed_is[K_LEFT]:
+        if key_pressed_is[K_LEFT] or key_pressed_is[K_a]:
             x -= 8
             hitbox[0] -= 8
             moving = True
@@ -166,7 +172,7 @@ def main():
                         idle_frame = 1
                 GAME.blit(run_frames_left[idle_frame], (x, y))
 
-        elif key_pressed_is[K_RIGHT]:
+        elif key_pressed_is[K_RIGHT] or key_pressed_is[K_d]:
             x += 8
             hitbox[0] += 8
             moving = True
@@ -203,14 +209,13 @@ def main():
         #     GAME.blit(climb_frames[climb_frame], (x, y))
 
         #attacking
-        elif key_pressed_is[K_e]:
+        elif key_pressed_is[K_e] and not jumping:
             moving = True
-            swordfx = pygame.mixer.Sound("assets/sounds/sword.wav")
-            pygame.mixer.Sound.set_volume(swordfx, 0.45)
-            pygame.mixer.Sound.play(swordfx)
             if facing == "right":
                 curr_frame = pygame.time.get_ticks()
                 if curr_frame - init_frame >= att_cd:
+                    if att_frame == 0:
+                        play_attack()
                     att_frame += 1
                     init_frame = curr_frame
                     if att_frame >= att_slide:
@@ -219,6 +224,8 @@ def main():
             if facing == "left":
                 curr_frame = pygame.time.get_ticks()
                 if curr_frame - init_frame >= att_cd:
+                    if att_frame == 0:
+                        play_attack()
                     att_frame += 1
                     init_frame = curr_frame
                     if att_frame >= att_slide:
@@ -226,11 +233,13 @@ def main():
                 GAME.blit(att_frames_left[att_frame], (x, y))
         
         #mouse attacking
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN and not jumping:
             moving = True
             if facing == "right":
                 curr_frame = pygame.time.get_ticks()
                 if curr_frame - init_frame >= att_cd:
+                    if att_frame == 0:
+                        play_attack()
                     att_frame += 1
                     init_frame = curr_frame
                     if att_frame >= att_slide:
@@ -239,14 +248,13 @@ def main():
             if facing == "left":
                 curr_frame = pygame.time.get_ticks()
                 if curr_frame - init_frame >= att_cd:
+                    if att_frame == 0:
+                        play_attack()
                     att_frame += 1
                     init_frame = curr_frame
                     if att_frame >= att_slide:
                         att_frame = 0
                 GAME.blit(att_frames_left[att_frame], (x, y))
-            swordfx = pygame.mixer.Sound("assets/sounds/sword.wav")
-            pygame.mixer.Sound.set_volume(swordfx, 0.45)
-            pygame.mixer.Sound.play(swordfx)
 
         #idle animation
         elif (not moving and not jumping) or (event.type == pygame.MOUSEBUTTONUP and not jumping):
